@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace JsonWebToken.Tests
 {
@@ -21,7 +22,10 @@ namespace JsonWebToken.Tests
         [Test]
         public void CreateToken()
         {
-            var expectedToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
+            var expectedToken = RemoveWriteSpaces(
+                @"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+                  eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.
+                  TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ");
 
             var token = _jsongWebToken.CreateToken(new Dictionary<string, object>
             {
@@ -36,7 +40,10 @@ namespace JsonWebToken.Tests
         [Test]
         public void DecodeToken()
         {
-            var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
+            var token = RemoveWriteSpaces(
+                @"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+                  eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.
+                  TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ");
 
             var claims = _jsongWebToken.Decode(token, _key);
 
@@ -49,9 +56,13 @@ namespace JsonWebToken.Tests
         [Test]
         public void ValidateTokenSignature()
         {
+
             var validSignature = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
             var invalidSignature = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7Hga";
-            var invalidToken = $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.{invalidSignature}";
+            var invalidToken = RemoveWriteSpaces(string.Format(
+                @"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+                  eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.{0}",
+                invalidSignature));
 
             try
             {
@@ -88,8 +99,6 @@ namespace JsonWebToken.Tests
         {
             var expiresOn = DateTime.UtcNow.AddMinutes(-1);
             var expiresOnUnix = UnixTimeStamp.ToUnixTimeStamp(expiresOn);
-
-            // Rounding milliseconds for comparison
             expiresOn = UnixTimeStamp.ToDateTime(expiresOnUnix);
 
             var token = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS256, _key, expiresOn);
@@ -103,6 +112,11 @@ namespace JsonWebToken.Tests
             {
                 Assert.That(ex.ExpiredOn, Is.EqualTo(expiresOn));
             }
+        }
+
+        private string RemoveWriteSpaces(string input)
+        {
+            return Regex.Replace(input, @"\s+", "");
         }
     }
 }
