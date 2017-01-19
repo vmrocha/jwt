@@ -6,6 +6,9 @@ using System.Web.Script.Serialization;
 
 namespace JsonWebToken
 {
+    /// <summary>
+    /// Used to create, decode and validate JSON Web Tokens.
+    /// </summary>
     public class JsonWebToken
     {
         private readonly Base64Url _base64Url;
