@@ -57,12 +57,12 @@ try
     var claims = jsongWebToken.Decode(token, key);
     // ...
 }
-catch (TokenExpiredException ex1)
+catch (TokenExpiredException ex)
 {
-    Console.WriteLine($"Token expired on {ex1.ExpiredOn}");
+    Console.WriteLine($"Token expired on {ex.ExpiredOn}");
 }
-catch (InvalidSignatureException ex2)
+catch (InvalidSignatureException ex)
 {
-    Console.WriteLine($"Invalid {ex2.InvalidSignature}, expected {ex2.ExpectedSignature}.");
+    Console.WriteLine($"Invalid {ex.InvalidSignature}, expected {ex.ExpectedSignature}.");
 }
 ```
