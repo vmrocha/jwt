@@ -21,17 +21,17 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Creates a JWT token in the format of {header}.{payload}.{signature}.
+        /// Creates a JWT token in the format of {header}.{claims}.{signature}.
         /// </summary>
-        /// <param name="payload">Payload information. Also known as claims.</param>
+        /// <param name="claims">User claims, also known as token payload information.</param>
         /// <param name="method">Algoritm method to be used.</param>
         /// <param name="key">The key used to sign the token.</param>
-        /// <returns>JWT token in the format of {header}.{payload}.{signature}.</returns>
-        public string CreateToken(Dictionary<string, object> payload, AlgorithmMethod method, byte[] key, DateTime? expirationTime = null)
+        /// <returns>JWT token in the format of {header}.{claims}.{signature}.</returns>
+        public string CreateToken(Dictionary<string, object> claims, AlgorithmMethod method, byte[] key, DateTime? expirationTime = null)
         {
-            if (payload == null)
+            if (claims == null)
             {
-                payload = new Dictionary<string, object>();
+                claims = new Dictionary<string, object>();
             }
 
             var header = new Dictionary<string, string>()
@@ -40,20 +40,20 @@ namespace JsonWebToken
                 { "typ", "JWT" }
             };
 
-            IncludeExpirationTime(payload, expirationTime);
+            IncludeExpirationTime(claims, expirationTime);
             
             var encodedHeader = _base64Url.Encode(GetBytes(_serializer.Serialize(header)));
-            var encodedPayload = _base64Url.Encode(GetBytes(_serializer.Serialize(payload)));
+            var encodedPayload = _base64Url.Encode(GetBytes(_serializer.Serialize(claims)));
             var encodedSignature = CreateSignature(method, key, encodedHeader, encodedPayload);
 
             return $"{encodedHeader}.{encodedPayload}.{encodedSignature}";
         }
 
         /// <summary>
-        /// Decode token, validates it and returns the payload as a <see cref="System.Collections.Generic.Dictionary{String, Object}"/>.
+        /// Decode token, validates it and returns the user claims in a <see cref="Dictionary{String, Object}"/>.
         /// </summary>
         /// <param name="token">Encoded JWT token.</param>
-        /// <returns>Token payload as a <see cref="System.Collections.Generic.Dictionary{String, Object}"/>.</returns>
+        /// <returns>User claims as populated in a <see cref="Dictionary{String, Object}"/>.</returns>
         public Dictionary<string, object> Decode(string token, byte[] key)
         {
             var parts = token.Split('.');
@@ -123,51 +123,51 @@ namespace JsonWebToken
         }
 
         /// <summary>
-        /// Creates a valid signature based on the algorithm, key, header and payload.
+        /// Creates a valid signature based on the algorithm, key, header and claims/payload.
         /// </summary>
         /// <param name="method">Algorith used to calculate the signature hash.</param>
         /// <param name="key">Key used to hash the signature.</param>
         /// <param name="encodedHeader">Encoded JWT header.</param>
-        /// <param name="encodedPayload">Encoded JWT payload.</param>
+        /// <param name="encodedClaims">Encoded JWT payload or claims.</param>
         /// <returns></returns>
-        private string CreateSignature(AlgorithmMethod method, byte[] key, string encodedHeader, string encodedPayload)
+        private string CreateSignature(AlgorithmMethod method, byte[] key, string encodedHeader, string encodedClaims)
         {
-            return _base64Url.Encode(CreateAlgorithm(method, key).ComputeHash(GetBytes($"{encodedHeader}.{encodedPayload}")));
+            return _base64Url.Encode(CreateAlgorithm(method, key).ComputeHash(GetBytes($"{encodedHeader}.{encodedClaims}")));
         }
 
         /// <summary>
-        /// Includes or overrides the expiration time for a given payload. See <see cref="RegisteredClaims.ExpirationTime"/>.
+        /// Includes or overrides the expiration time for a given payload/claims. See <see cref="RegisteredClaims.ExpirationTime"/>.
         /// </summary>
-        /// <param name="payload">Payload to be updated.</param>
+        /// <param name="claims">Claims information, also known as JWT payload.</param>
         /// <param name="expirationTime">Expiration time in the format of <see cref="DateTime"/>. It will be converted to Unix Time.</param>
-        private void IncludeExpirationTime(Dictionary<string, object> payload, DateTime? expirationTime)
+        private void IncludeExpirationTime(Dictionary<string, object> claims, DateTime? expirationTime)
         {
             if (expirationTime.HasValue)
             {
                 long unixTimeStamp = UnixTimeStamp.ToUnixTimeStamp(expirationTime.Value);
-                if (payload.ContainsKey(RegisteredClaims.ExpirationTime))
+                if (claims.ContainsKey(RegisteredClaims.ExpirationTime))
                 {
-                    payload[RegisteredClaims.ExpirationTime] = unixTimeStamp;
+                    claims[RegisteredClaims.ExpirationTime] = unixTimeStamp;
                 }
                 else
                 {
-                    payload.Add(RegisteredClaims.ExpirationTime, unixTimeStamp);
+                    claims.Add(RegisteredClaims.ExpirationTime, unixTimeStamp);
                 }
             }
         }
 
         /// <summary>
-        /// Extract the <see cref="RegisteredClaims.ExpirationTime"/> from the payload if it is valid.
+        /// Extract the <see cref="RegisteredClaims.ExpirationTime"/> from the claims dictionary if it is valid.
         /// </summary>
-        /// <param name="payload">JWT payload information.</param>
-        /// <returns></returns>
-        private long? GetExpirationTime(Dictionary<string, object> payload)
+        /// <param name="claims">Claims information, also known as JWT payload.</param>
+        /// <returns>Expiration time in Unix TimeStamp format or <code>null</code> if not found or invalid.</returns>
+        private long? GetExpirationTime(Dictionary<string, object> claims)
         {
-            if (payload != null &&
-                payload.ContainsKey(RegisteredClaims.ExpirationTime) &&
-                payload[RegisteredClaims.ExpirationTime] != null)
+            if (claims != null &&
+                claims.ContainsKey(RegisteredClaims.ExpirationTime) &&
+                claims[RegisteredClaims.ExpirationTime] != null)
             {
-                var expirationValue = payload[RegisteredClaims.ExpirationTime].ToString();
+                var expirationValue = claims[RegisteredClaims.ExpirationTime].ToString();
 
                 long unixTime = 0;
                 if (long.TryParse(expirationValue, out unixTime))

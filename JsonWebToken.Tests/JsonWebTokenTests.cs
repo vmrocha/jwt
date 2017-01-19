@@ -38,12 +38,12 @@ namespace JsonWebToken.Tests
         {
             var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
 
-            var payload = _jsongWebToken.Decode(token, _key);
+            var claims = _jsongWebToken.Decode(token, _key);
 
-            Assert.That(payload.Count, Is.EqualTo(3));
-            Assert.That(payload[RegisteredClaims.Subject], Is.EqualTo("1234567890"));
-            Assert.That(payload["name"], Is.EqualTo("John Doe"));
-            Assert.That(payload["admin"], Is.EqualTo(true));
+            Assert.That(claims.Count, Is.EqualTo(3));
+            Assert.That(claims[RegisteredClaims.Subject], Is.EqualTo("1234567890"));
+            Assert.That(claims["name"], Is.EqualTo("John Doe"));
+            Assert.That(claims["admin"], Is.EqualTo(true));
         }
 
         [Test]
@@ -78,9 +78,9 @@ namespace JsonWebToken.Tests
                 { "admin", true }
             }, AlgorithmMethod.HS256, _key, expiresOn);
 
-            var payload = _jsongWebToken.Decode(token, _key);
+            var claims = _jsongWebToken.Decode(token, _key);
 
-            Assert.That(payload["exp"], Is.EqualTo(expiresOnUnix));
+            Assert.That(claims["exp"], Is.EqualTo(expiresOnUnix));
         }
 
         [Test]
