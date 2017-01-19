@@ -27,13 +27,20 @@ namespace JsonWebToken
         /// <param name="method">Algoritm method to be used.</param>
         /// <param name="key">The key used to sign the token.</param>
         /// <returns>JWT token in the format of {header}.{payload}.{signature}.</returns>
-        public string CreateToken(Dictionary<string, object> payload, AlgorithmMethod method, byte[] key)
+        public string CreateToken(Dictionary<string, object> payload, AlgorithmMethod method, byte[] key, DateTime? expirationTime = null)
         {
+            if (payload == null)
+            {
+                payload = new Dictionary<string, object>();
+            }
+
             var header = new Dictionary<string, string>()
             {
                 { "alg", method.ToString() },
                 { "typ", "JWT" }
             };
+
+            IncludeExpirationTime(payload, expirationTime);
             
             var encodedHeader = _base64Url.Encode(GetBytes(_serializer.Serialize(header)));
             var encodedPayload = _base64Url.Encode(GetBytes(_serializer.Serialize(payload)));
@@ -50,11 +57,12 @@ namespace JsonWebToken
         public Dictionary<string, object> Decode(string token, byte[] key)
         {
             var parts = token.Split('.');
+
             var decodedHeader = _base64Url.Decode(parts[0]);
-            var decodedPayload = _base64Url.Decode(parts[1]);
+            var decodedClaims = _base64Url.Decode(parts[1]);
 
             var header = _serializer.Deserialize<Dictionary<string, string>>(GetString(decodedHeader));
-            var payload = _serializer.Deserialize<Dictionary<string, object>>(GetString(decodedPayload));
+            var claims = _serializer.Deserialize<Dictionary<string, object>>(GetString(decodedClaims));
 
             var algorithm = (AlgorithmMethod)Enum.Parse(typeof(AlgorithmMethod), header["alg"]);
             var signature = CreateSignature(algorithm, key, parts[0], parts[1]);
@@ -63,8 +71,17 @@ namespace JsonWebToken
             {
                 throw new InvalidSignatureException(parts[2], signature);
             }
+
+            var expirationTime = GetExpirationTime(claims);
+            if (expirationTime.HasValue)
+            {
+                if (expirationTime < UnixTimeStamp.ToUnixTimeStamp(DateTime.UtcNow))
+                {
+                    throw new TokenExpiredException(UnixTimeStamp.ToDateTime(expirationTime.Value));
+                }
+            }
             
-            return payload;
+            return claims;
         }
 
         /// <summary>
@@ -116,6 +133,50 @@ namespace JsonWebToken
         private string CreateSignature(AlgorithmMethod method, byte[] key, string encodedHeader, string encodedPayload)
         {
             return _base64Url.Encode(CreateAlgorithm(method, key).ComputeHash(GetBytes($"{encodedHeader}.{encodedPayload}")));
+        }
+
+        /// <summary>
+        /// Includes or overrides the expiration time for a given payload. See <see cref="RegisteredClaims.ExpirationTime"/>.
+        /// </summary>
+        /// <param name="payload">Payload to be updated.</param>
+        /// <param name="expirationTime">Expiration time in the format of <see cref="DateTime"/>. It will be converted to Unix Time.</param>
+        private void IncludeExpirationTime(Dictionary<string, object> payload, DateTime? expirationTime)
+        {
+            if (expirationTime.HasValue)
+            {
+                long unixTimeStamp = UnixTimeStamp.ToUnixTimeStamp(expirationTime.Value);
+                if (payload.ContainsKey(RegisteredClaims.ExpirationTime))
+                {
+                    payload[RegisteredClaims.ExpirationTime] = unixTimeStamp;
+                }
+                else
+                {
+                    payload.Add(RegisteredClaims.ExpirationTime, unixTimeStamp);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Extract the <see cref="RegisteredClaims.ExpirationTime"/> from the payload if it is valid.
+        /// </summary>
+        /// <param name="payload">JWT payload information.</param>
+        /// <returns></returns>
+        private long? GetExpirationTime(Dictionary<string, object> payload)
+        {
+            if (payload != null &&
+                payload.ContainsKey(RegisteredClaims.ExpirationTime) &&
+                payload[RegisteredClaims.ExpirationTime] != null)
+            {
+                var expirationValue = payload[RegisteredClaims.ExpirationTime].ToString();
+
+                long unixTime = 0;
+                if (long.TryParse(expirationValue, out unixTime))
+                {
+                    return unixTime;
+                }
+            }
+
+            return null;
         }
     }
 }

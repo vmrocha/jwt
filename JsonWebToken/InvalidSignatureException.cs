@@ -16,11 +16,11 @@ namespace JsonWebToken
         /// <summary>
         /// Invalid signature found in token.
         /// </summary>
-        public string InvalidSignature { get; set; }
+        public string InvalidSignature { get; private set; }
 
         /// <summary>
         /// Expected signature to consider the token as valid.
         /// </summary>
-        public string ExpectedSignature { get; set; }
+        public string ExpectedSignature { get; private set; }
     }
 }

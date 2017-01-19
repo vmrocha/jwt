@@ -1,9 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace JsonWebToken.Tests
 {
@@ -64,6 +62,46 @@ namespace JsonWebToken.Tests
             {
                 Assert.That(ex.InvalidSignature, Is.EqualTo(invalidSignature));
                 Assert.That(ex.ExpectedSignature, Is.EqualTo(validSignature));
+            }
+        }
+
+        [Test]
+        public void CreateTokenWithExpirationTime()
+        {
+            var expiresOn = DateTime.UtcNow.AddMinutes(30);
+            var expiresOnUnix = UnixTimeStamp.ToUnixTimeStamp(expiresOn);
+
+            var token = _jsongWebToken.CreateToken(new Dictionary<string, object>
+            {
+                { RegisteredClaims.Subject, "1234567890"},
+                { "name", "John Doe" },
+                { "admin", true }
+            }, AlgorithmMethod.HS256, _key, expiresOn);
+
+            var payload = _jsongWebToken.Decode(token, _key);
+
+            Assert.That(payload["exp"], Is.EqualTo(expiresOnUnix));
+        }
+
+        [Test]
+        public void ValidateExpirationTime()
+        {
+            var expiresOn = DateTime.UtcNow.AddMinutes(-1);
+            var expiresOnUnix = UnixTimeStamp.ToUnixTimeStamp(expiresOn);
+
+            // Rounding milliseconds for comparison
+            expiresOn = UnixTimeStamp.ToDateTime(expiresOnUnix);
+
+            var token = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS256, _key, expiresOn);
+
+            try
+            {
+                _jsongWebToken.Decode(token, _key);
+                Assert.IsTrue(false, "Token expiration time not validated.");
+            }
+            catch (TokenExpiredException ex)
+            {
+                Assert.That(ex.ExpiredOn, Is.EqualTo(expiresOn));
             }
         }
     }

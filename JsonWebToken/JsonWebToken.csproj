@@ -38,10 +38,12 @@
   <ItemGroup>
     <Compile Include="AlgorithmMethod.cs" />
     <Compile Include="Base64Url.cs" />
+    <Compile Include="UnixTimeStamp.cs" />
     <Compile Include="InvalidSignatureException.cs" />
     <Compile Include="JsonWebToken.cs" />
     <Compile Include="RegisteredClaims.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TokenExpiredException.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
