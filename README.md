@@ -53,7 +53,7 @@ The `TokenInformation` class exposes four main properties: `Header`, `Claims`, `
 
 ### Token Validation
 
-Currently the `Decode()` method validates the token signature. If the signature is not valid, the library will throw an exception including the invalid token as the expected one.
+Currently the `Decode()` method validates the token signature. If the signature is not valid, the library will throw an exception including the invalid token and the expected one.
 
 ```cs
 try
@@ -67,7 +67,7 @@ catch (InvalidSignatureException ex)
 }
 ```
 
-If you don't want get the token information without validating the signature set the `validateSignature` parameter to `false`.
+If you don't want to get the token information without validating the signature, set the `validateSignature` parameter to `false`.
 
 ```cs
 var claims = jsongWebToken.Decode(token, key, validateSignature: false);
