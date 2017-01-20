@@ -23,15 +23,16 @@ var jsongWebToken = new JsonWebToken();
 var token = jsongWebToken.CreateToken(claims, AlgorithmMethod.HS256, key);
 ```
 
-The previous code will set the following token. Line breaks were added for display purposes only.
+The previous code will generate the following token.
 
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
 eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.
 TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
 ```
+(line breaks were added for display purposes only)
 
-An overload metho for `CreateToken()` is provided to set the [Expiration Time](https://tools.ietf.org/html/rfc7519#section-4.1.4) using `DateTime`. The following code will create a token that will expire in 10 minutes from the current UTC time.
+An optional parameter on `CreateToken()` is provided to set the [Expiration Time](https://tools.ietf.org/html/rfc7519#section-4.1.4). The following code will create a token that will expire in 10 minutes from the current UTC time.
 
 ```cs
 var token = jsongWebToken.CreateToken(null, AlgorithmMethod.HS256, key, DateTime.UtcNow.AddMinutes(10));
@@ -39,7 +40,7 @@ var token = jsongWebToken.CreateToken(null, AlgorithmMethod.HS256, key, DateTime
 
 ### Decode token
 
-An existing token can be decoded using the `JsonWebToken` and the method `Decode()`.
+An existing token can be decoded using the method `Decode()`.
 
 ```cs
 var key = Encoding.UTF8.GetBytes("secret");
