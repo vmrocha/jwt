@@ -4,9 +4,9 @@
 
 JSON Web Token .NET implementation based on [RFC 7519](https://tools.ietf.org/html/rfc7519).
 
-## How to use
+## How to Use
 
-### Create token
+### Create Token
 
 You can use the `JsonWebToken` class to create a token using the method `CreateToken()`.
 
@@ -38,7 +38,7 @@ An optional parameter on `CreateToken()` is provided to set the [Expiration Time
 var token = jsongWebToken.CreateToken(null, AlgorithmMethod.HS256, key, DateTime.UtcNow.AddMinutes(10));
 ```
 
-### Decode token
+### Decode Token
 
 An existing token can be decoded using the method `Decode()`.
 
@@ -51,7 +51,7 @@ TokenInformation tokenInfo = jsongWebToken.Decode(token, key);
 
 The `TokenInformation` class exposes four main properties: `Header`, `Claims`, `ExpiresOn` and `HasExpired`.
 
-### Token validation
+### Token Validation
 
 Currently the `Decode()` method validates the token signature. If the signature is not valid, the library will throw an exception including the invalid token as the expected one.
 
