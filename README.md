@@ -67,7 +67,7 @@ catch (InvalidSignatureException ex)
 }
 ```
 
-If you don't want to get the token information without validating the signature, set the `validateSignature` parameter to `false`.
+If you want to get the token information without validating the signature, set the `validateSignature` parameter to `false`.
 
 ```cs
 var claims = jsongWebToken.Decode(token, key, validateSignature: false);
