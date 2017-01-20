@@ -44,12 +44,15 @@ An existing token can be decoded using the `JsonWebToken` and the method `Decode
 ```cs
 var key = Encoding.UTF8.GetBytes("secret");
 var jsongWebToken = new JsonWebToken();
-var claims = jsongWebToken.Decode(token, key);
+
+TokenInformation tokenInfo = jsongWebToken.Decode(token, key);
 ```
+
+The `TokenInformation` class exposes four main properties: `Header`, `Claims`, `ExpiresOn` and `HasExpired`.
 
 ### Token validation
 
-Currently the `Decode()` method validate the token signature and the [Expiration Time](https://tools.ietf.org/html/rfc7519#section-4.1.4) if it is present in the payload. If one of them fails, the library will throw an exception accordingly.
+Currently the `Decode()` method validates the token signature. If the signature is not valid, the library will throw an exception including the invalid token as the expected one.
 
 ```cs
 try
@@ -57,12 +60,14 @@ try
     var claims = jsongWebToken.Decode(token, key);
     // ...
 }
-catch (TokenExpiredException ex)
-{
-    Console.WriteLine($"Token expired on {ex.ExpiredOn}");
-}
 catch (InvalidSignatureException ex)
 {
     Console.WriteLine($"Invalid {ex.InvalidSignature}, expected {ex.ExpectedSignature}.");
 }
+```
+
+If you don't want get the token information without validating the signature set the `validateSignature` parameter to `false`.
+
+```cs
+var claims = jsongWebToken.Decode(token, key, validateSignature: false);
 ```

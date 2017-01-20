@@ -54,34 +54,32 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="token">Encoded JWT token.</param>
         /// <returns>User claims as populated in a <see cref="Dictionary{String, Object}"/>.</returns>
-        public Dictionary<string, object> Decode(string token, byte[] key)
+        public TokenInformation Decode(string token, byte[] key, bool validateSignature = true)
         {
             var parts = token.Split('.');
+
+            var header = parts[0];
+            var claims = parts[1];
+            var signature = parts[2];
 
             var decodedHeader = _base64Url.Decode(parts[0]);
             var decodedClaims = _base64Url.Decode(parts[1]);
 
-            var header = _serializer.Deserialize<Dictionary<string, string>>(GetString(decodedHeader));
-            var claims = _serializer.Deserialize<Dictionary<string, object>>(GetString(decodedClaims));
-
-            var algorithm = (AlgorithmMethod)Enum.Parse(typeof(AlgorithmMethod), header["alg"]);
-            var signature = CreateSignature(algorithm, key, parts[0], parts[1]);
-
-            if (!string.Equals(signature, parts[2]))
+            var headerDictionary = _serializer.Deserialize<Dictionary<string, string>>(GetString(decodedHeader));
+            var claimsDictionary = _serializer.Deserialize<Dictionary<string, object>>(GetString(decodedClaims));
+            
+            if (validateSignature)
             {
-                throw new InvalidSignatureException(parts[2], signature);
-            }
+                var algorithm = (AlgorithmMethod)Enum.Parse(typeof(AlgorithmMethod), headerDictionary["alg"]);
+                var expectedSignature = CreateSignature(algorithm, key, header, claims);
 
-            var expirationTime = GetExpirationTime(claims);
-            if (expirationTime.HasValue)
-            {
-                if (expirationTime < UnixTimeStamp.ToUnixTimeStamp(DateTime.UtcNow))
+                if (!string.Equals(signature, expectedSignature))
                 {
-                    throw new TokenExpiredException(UnixTimeStamp.ToDateTime(expirationTime.Value));
+                    throw new InvalidSignatureException(signature, expectedSignature);
                 }
             }
-            
-            return claims;
+
+            return new TokenInformation(headerDictionary, claimsDictionary);
         }
 
         /// <summary>
@@ -154,29 +152,6 @@ namespace JsonWebToken
                     claims.Add(RegisteredClaims.ExpirationTime, unixTimeStamp);
                 }
             }
-        }
-
-        /// <summary>
-        /// Extract the <see cref="RegisteredClaims.ExpirationTime"/> from the claims dictionary if it is valid.
-        /// </summary>
-        /// <param name="claims">Claims information, also known as JWT payload.</param>
-        /// <returns>Expiration time in Unix TimeStamp format or <code>null</code> if not found or invalid.</returns>
-        private long? GetExpirationTime(Dictionary<string, object> claims)
-        {
-            if (claims != null &&
-                claims.ContainsKey(RegisteredClaims.ExpirationTime) &&
-                claims[RegisteredClaims.ExpirationTime] != null)
-            {
-                var expirationValue = claims[RegisteredClaims.ExpirationTime].ToString();
-
-                long unixTime = 0;
-                if (long.TryParse(expirationValue, out unixTime))
-                {
-                    return unixTime;
-                }
-            }
-
-            return null;
         }
     }
 }

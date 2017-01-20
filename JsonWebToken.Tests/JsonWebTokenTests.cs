@@ -9,6 +9,8 @@ namespace JsonWebToken.Tests
     [TestFixture]
     public class JsonWebTokenTests
     {
+        private string _genericToken;
+        private Dictionary<string, object> _genericClaims;
         private byte[] _key;
         private JsonWebToken _jsongWebToken;
 
@@ -17,46 +19,37 @@ namespace JsonWebToken.Tests
         {
             _key = Encoding.UTF8.GetBytes("secret");
             _jsongWebToken = new JsonWebToken();
+            _genericToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
+            _genericClaims = new Dictionary<string, object>
+            {
+                { RegisteredClaims.Subject, "1234567890"},
+                { "name", "John Doe" },
+                { "admin", true }
+            };
         }
 
         [Test]
         public void CreateToken()
         {
-            var expectedToken = RemoveWriteSpaces(
-                @"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-                  eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.
-                  TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ");
+            var token = _jsongWebToken.CreateToken(_genericClaims, AlgorithmMethod.HS256, _key);
 
-            var token = _jsongWebToken.CreateToken(new Dictionary<string, object>
-            {
-                { RegisteredClaims.Subject, "1234567890"},
-                { "name", "John Doe" },
-                { "admin", true }
-            }, AlgorithmMethod.HS256, _key);
-
-            Assert.That(token, Is.EqualTo(expectedToken));
+            Assert.That(token, Is.EqualTo(_genericToken));
         }
 
         [Test]
         public void DecodeToken()
         {
-            var token = RemoveWriteSpaces(
-                @"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-                  eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.
-                  TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ");
+            var tokenInfo = _jsongWebToken.Decode(_genericToken, _key);
 
-            var claims = _jsongWebToken.Decode(token, _key);
-
-            Assert.That(claims.Count, Is.EqualTo(3));
-            Assert.That(claims[RegisteredClaims.Subject], Is.EqualTo("1234567890"));
-            Assert.That(claims["name"], Is.EqualTo("John Doe"));
-            Assert.That(claims["admin"], Is.EqualTo(true));
+            Assert.That(tokenInfo.Claims.Count, Is.EqualTo(3));
+            Assert.That(tokenInfo.Claims[RegisteredClaims.Subject], Is.EqualTo("1234567890"));
+            Assert.That(tokenInfo.Claims["name"], Is.EqualTo("John Doe"));
+            Assert.That(tokenInfo.Claims["admin"], Is.EqualTo(true));
         }
 
         [Test]
         public void ValidateTokenSignature()
         {
-
             var validSignature = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
             var invalidSignature = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7Hga";
             var invalidToken = RemoveWriteSpaces(string.Format(
@@ -89,9 +82,9 @@ namespace JsonWebToken.Tests
                 { "admin", true }
             }, AlgorithmMethod.HS256, _key, expiresOn);
 
-            var claims = _jsongWebToken.Decode(token, _key);
+            var tokenInfo = _jsongWebToken.Decode(token, _key);
 
-            Assert.That(claims["exp"], Is.EqualTo(expiresOnUnix));
+            Assert.That(tokenInfo.Claims[RegisteredClaims.ExpirationTime], Is.EqualTo(expiresOnUnix));
         }
 
         [Test]
@@ -99,19 +92,13 @@ namespace JsonWebToken.Tests
         {
             var expiresOn = DateTime.UtcNow.AddMinutes(-1);
             var expiresOnUnix = UnixTimeStamp.ToUnixTimeStamp(expiresOn);
-            expiresOn = UnixTimeStamp.ToDateTime(expiresOnUnix);
+            var expiredOn = UnixTimeStamp.ToDateTime(expiresOnUnix);
 
             var token = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS256, _key, expiresOn);
+            var tokenInfo = _jsongWebToken.Decode(token, _key);
 
-            try
-            {
-                _jsongWebToken.Decode(token, _key);
-                Assert.IsTrue(false, "Token expiration time not validated.");
-            }
-            catch (TokenExpiredException ex)
-            {
-                Assert.That(ex.ExpiredOn, Is.EqualTo(expiresOn));
-            }
+            Assert.That(tokenInfo.HasExpired, Is.True);
+            Assert.That(tokenInfo.ExpiresOn, Is.EqualTo(expiredOn));
         }
 
         private string RemoveWriteSpaces(string input)
