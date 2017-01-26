@@ -58,7 +58,7 @@ Currently the `Decode()` method validates the token signature. If the signature 
 ```cs
 try
 {
-    var claims = jsongWebToken.Decode(token, key);
+    TokenInformation tokenInfo = jsongWebToken.Decode(token, key);
     // ...
 }
 catch (InvalidSignatureException ex)
