@@ -23,11 +23,79 @@ namespace JsonWebToken
         /// <summary>
         /// Creates a JWT token in the format of {header}.{claims}.{signature}.
         /// </summary>
+        /// <param name="key">The key used to sign the token.</param>
+        /// <returns>JWT token in the format of {header}.{claims}.{signature}.</returns>
+        public string CreateToken(byte[] key)
+        {
+            return CreateToken(key, null, AlgorithmMethod.HS256, null);
+        }
+
+        /// <summary>
+        /// Creates a JWT token in the format of {header}.{claims}.{signature}.
+        /// </summary>
+        /// <param name="key">The key used to sign the token.</param>
+        /// <param name="expirationTime">The <see cref="RegisteredClaims.ExpirationTime"/>.</param>
+        /// <returns>JWT token in the format of {header}.{claims}.{signature}.</returns>
+        public string CreateToken(byte[] key, DateTime? expirationTime)
+        {
+            return CreateToken(key, null, AlgorithmMethod.HS256, expirationTime);
+        }
+
+        /// <summary>
+        /// Creates a JWT token in the format of {header}.{claims}.{signature}.
+        /// </summary>
+        /// <param name="claims">User claims, also known as token payload information.</param>
+        /// <param name="key">The key used to sign the token.</param>
+        /// <returns>JWT token in the format of {header}.{claims}.{signature}.</returns>
+        public string CreateToken(byte[] key, Dictionary<string, object> claims)
+        {
+            return CreateToken(key, claims, AlgorithmMethod.HS256, null);
+        }
+
+        /// <summary>
+        /// Creates a JWT token in the format of {header}.{claims}.{signature}.
+        /// </summary>
+        /// <param name="claims">User claims, also known as token payload information.</param>
+        /// <param name="key">The key used to sign the token.</param>
+        /// <param name="expirationTime">The <see cref="RegisteredClaims.ExpirationTime"/>.</param>
+        /// <returns>JWT token in the format of {header}.{claims}.{signature}.</returns>
+        public string CreateToken(byte[] key, Dictionary<string, object> claims, DateTime? expirationTime)
+        {
+            return CreateToken(key, claims, AlgorithmMethod.HS256, expirationTime);
+        }
+
+        /// <summary>
+        /// Creates a JWT token in the format of {header}.{claims}.{signature}.
+        /// </summary>
+        /// <param name="key">The key used to sign the token.</param>
+        /// <param name="method">Algoritm method to be used.</param>
+        /// <returns>JWT token in the format of {header}.{claims}.{signature}.</returns>
+        public string CreateToken(byte[] key, AlgorithmMethod method)
+        {
+            return CreateToken(key, null, method, null);
+        }
+
+        /// <summary>
+        /// Creates a JWT token in the format of {header}.{claims}.{signature}.
+        /// </summary>
+        /// <param name="key">The key used to sign the token.</param>
+        /// <param name="claims">User claims, also known as token payload information.</param>
+        /// <param name="method">Algoritm method to be used.</param>
+        /// <returns>JWT token in the format of {header}.{claims}.{signature}.</returns>
+        public string CreateToken(byte[] key, Dictionary<string, object> claims, AlgorithmMethod method)
+        {
+            return CreateToken(key, claims, method, null);
+        }
+
+        /// <summary>
+        /// Creates a JWT token in the format of {header}.{claims}.{signature}.
+        /// </summary>
         /// <param name="claims">User claims, also known as token payload information.</param>
         /// <param name="method">Algoritm method to be used.</param>
         /// <param name="key">The key used to sign the token.</param>
+        /// <param name="expirationTime">The <see cref="RegisteredClaims.ExpirationTime"/>.</param>
         /// <returns>JWT token in the format of {header}.{claims}.{signature}.</returns>
-        public string CreateToken(Dictionary<string, object> claims, AlgorithmMethod method, byte[] key, DateTime? expirationTime = null)
+        public string CreateToken(byte[] key, Dictionary<string, object> claims, AlgorithmMethod method, DateTime? expirationTime)
         {
             if (claims == null)
             {
@@ -54,7 +122,19 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="token">Encoded JWT token.</param>
         /// <returns>User claims as populated in a <see cref="Dictionary{String, Object}"/>.</returns>
-        public TokenInformation Decode(string token, byte[] key, bool validateSignature = true)
+        public TokenInformation Decode(string token)
+        {
+            return Decode(token, null);
+        }
+
+        /// <summary>
+        /// Decode token, validates it and returns the user claims in a <see cref="Dictionary{String, Object}"/>.
+        /// </summary>
+        /// <param name="token">Encoded JWT token.</param>
+        /// <param name="key">Key used to validate the token signature.</param>
+        /// <param name="validateSignature"><code>true</code> to validate the token signature.</param>
+        /// <returns>User claims as populated in a <see cref="Dictionary{String, Object}"/>.</returns>
+        public TokenInformation Decode(string token, byte[] key)
         {
             var parts = token.Split('.');
 
@@ -68,7 +148,7 @@ namespace JsonWebToken
             var headerDictionary = _serializer.Deserialize<Dictionary<string, string>>(GetString(decodedHeader));
             var claimsDictionary = _serializer.Deserialize<Dictionary<string, object>>(GetString(decodedClaims));
             
-            if (validateSignature)
+            if (key != null)
             {
                 AlgorithmMethod algorithm;
 

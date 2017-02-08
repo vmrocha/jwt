@@ -30,8 +30,7 @@ namespace JsonWebToken.Tests
         [Test]
         public void CreateToken()
         {
-            var token = _jsongWebToken.CreateToken(_genericClaims, AlgorithmMethod.HS256, _key);
-
+            var token = _jsongWebToken.CreateToken(_key, _genericClaims);
             Assert.That(token, Is.EqualTo(_genericToken));
         }
 
@@ -52,12 +51,12 @@ namespace JsonWebToken.Tests
             var expiresOn = DateTime.UtcNow.AddMinutes(30);
             var expiresOnUnix = UnixTimeStamp.ToUnixTimeStamp(expiresOn);
 
-            var token = _jsongWebToken.CreateToken(new Dictionary<string, object>
+            var token = _jsongWebToken.CreateToken(_key, new Dictionary <string, object>
             {
                 { RegisteredClaims.Subject, "1234567890"},
                 { "name", "John Doe" },
                 { "admin", true }
-            }, AlgorithmMethod.HS256, _key, expiresOn);
+            }, AlgorithmMethod.HS256, expiresOn);
 
             var tokenInfo = _jsongWebToken.Decode(token, _key);
 
@@ -67,23 +66,23 @@ namespace JsonWebToken.Tests
         [Test]
         public void ValidateExpirationTime()
         {
-            var expiresOn = DateTime.UtcNow.AddMinutes(-1);
-            var expiresOnUnix = UnixTimeStamp.ToUnixTimeStamp(expiresOn);
-            var expiredOn = UnixTimeStamp.ToDateTime(expiresOnUnix);
+            var temp = DateTime.UtcNow.AddDays(-1);
+            var expirationTimeUnix = UnixTimeStamp.ToUnixTimeStamp(temp);
+            var expirationTime = UnixTimeStamp.ToDateTime(expirationTimeUnix);
 
-            var token = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS256, _key, expiresOn);
+            var token = _jsongWebToken.CreateToken(_key, expirationTime);
             var tokenInfo = _jsongWebToken.Decode(token, _key);
 
             Assert.That(tokenInfo.HasExpired, Is.True);
-            Assert.That(tokenInfo.ExpiresOn, Is.EqualTo(expiredOn));
+            Assert.That(tokenInfo.ExpiresOn, Is.EqualTo(expirationTime));
         }
 
         [Test]
         public void AddSelectedAlgorithmToHeader()
         {
-            var hs256 = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS256, _key);
-            var hs384 = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS384, _key);
-            var hs512 = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS512, _key);
+            var hs256 = _jsongWebToken.CreateToken(_key, AlgorithmMethod.HS256);
+            var hs384 = _jsongWebToken.CreateToken(_key, AlgorithmMethod.HS384);
+            var hs512 = _jsongWebToken.CreateToken(_key, AlgorithmMethod.HS512);
 
             Assert.AreEqual("HS256", _jsongWebToken.Decode(hs256, _key).Header["alg"]);
             Assert.AreEqual("HS384", _jsongWebToken.Decode(hs384, _key).Header["alg"]);
@@ -93,7 +92,7 @@ namespace JsonWebToken.Tests
         [Test]
         public void HasExpiredFalseWithNoExpireInformation()
         {
-            var token = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS256, _key);
+            var token = _jsongWebToken.CreateToken(_key);
 
             var information = _jsongWebToken.Decode(token, _key);
 
@@ -110,7 +109,7 @@ namespace JsonWebToken.Tests
                 { RegisteredClaims.ExpirationTime, DateTime.Now },
             };
 
-            var token = _jsongWebToken.CreateToken(claims, AlgorithmMethod.HS256, _key, expirationTime);
+            var token = _jsongWebToken.CreateToken(_key, claims, expirationTime);
             var information = _jsongWebToken.Decode(token, _key);
 
             Assert.AreEqual(information.ExpiresOn.Value, expirationTime);

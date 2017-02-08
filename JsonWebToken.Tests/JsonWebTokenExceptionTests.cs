@@ -5,6 +5,7 @@ using System.Text;
 
 namespace JsonWebToken.Tests
 {
+    [TestFixture]
     public class JsonWebTokenExceptionTests
     {
         private byte[] _key;
@@ -62,7 +63,7 @@ namespace JsonWebToken.Tests
                 { RegisteredClaims.ExpirationTime, "invalid"},
             };
 
-            var token = _jsongWebToken.CreateToken(claims, AlgorithmMethod.HS256, _key);
+            var token = _jsongWebToken.CreateToken(_key, claims);
 
             Assert.That(() => _jsongWebToken.Decode(token, _key).HasExpired,
                 Throws.Exception.TypeOf<InvalidExpirationTimeException>()
