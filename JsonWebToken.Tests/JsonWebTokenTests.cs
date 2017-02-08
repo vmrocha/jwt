@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace JsonWebToken.Tests
 {
@@ -48,28 +47,6 @@ namespace JsonWebToken.Tests
         }
 
         [Test]
-        public void ValidateTokenSignature()
-        {
-            var validSignature = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-            var invalidSignature = "TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7Hga";
-            var invalidToken = RemoveWriteSpaces(string.Format(
-                @"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-                  eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.{0}",
-                invalidSignature));
-
-            try
-            {
-                _jsongWebToken.Decode(invalidToken, _key);
-                Assert.IsTrue(false, "Token signature not validated.");
-            }
-            catch (InvalidSignatureException ex)
-            {
-                Assert.That(ex.InvalidSignature, Is.EqualTo(invalidSignature));
-                Assert.That(ex.ExpectedSignature, Is.EqualTo(validSignature));
-            }
-        }
-
-        [Test]
         public void CreateTokenWithExpirationTime()
         {
             var expiresOn = DateTime.UtcNow.AddMinutes(30);
@@ -101,9 +78,42 @@ namespace JsonWebToken.Tests
             Assert.That(tokenInfo.ExpiresOn, Is.EqualTo(expiredOn));
         }
 
-        private string RemoveWriteSpaces(string input)
+        [Test]
+        public void AddSelectedAlgorithmToHeader()
         {
-            return Regex.Replace(input, @"\s+", "");
+            var hs256 = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS256, _key);
+            var hs384 = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS384, _key);
+            var hs512 = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS512, _key);
+
+            Assert.AreEqual("HS256", _jsongWebToken.Decode(hs256, _key).Header["alg"]);
+            Assert.AreEqual("HS384", _jsongWebToken.Decode(hs384, _key).Header["alg"]);
+            Assert.AreEqual("HS512", _jsongWebToken.Decode(hs512, _key).Header["alg"]);
+        }
+
+        [Test]
+        public void HasExpiredFalseWithNoExpireInformation()
+        {
+            var token = _jsongWebToken.CreateToken(null, AlgorithmMethod.HS256, _key);
+
+            var information = _jsongWebToken.Decode(token, _key);
+
+            Assert.IsNull(information.ExpiresOn);
+            Assert.IsFalse(information.HasExpired);
+        }
+
+        [Test]
+        public void OverwriteExpirationTimeWhenAlreadyPresent()
+        {
+            var expirationTime = DateTime.Today.AddDays(1);
+            var claims = new Dictionary<string, object>
+            {
+                { RegisteredClaims.ExpirationTime, DateTime.Now },
+            };
+
+            var token = _jsongWebToken.CreateToken(claims, AlgorithmMethod.HS256, _key, expirationTime);
+            var information = _jsongWebToken.Decode(token, _key);
+
+            Assert.AreEqual(information.ExpiresOn.Value, expirationTime);
         }
     }
 }

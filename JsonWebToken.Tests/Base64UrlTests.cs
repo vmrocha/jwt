@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Text;
 
 namespace JsonWebToken.Tests
@@ -28,6 +29,26 @@ namespace JsonWebToken.Tests
         public void Decode()
         {
             Assert.That(_base64Url.Decode(_encoded), Is.EqualTo(_decoded));
+        }
+        
+        [Test]
+        public void ThrowFormatExceptionForInvalidBase64Url()
+        {
+            var invalid = "eyJzdWIiOiIxMjM0NTY3ODkwIiwmFtZSI6IkgRG9lIiwiYWRtaW4iOnRydWV9";
+
+            Assert.That(() => _base64Url.Decode(invalid),
+                Throws.Exception
+                  .TypeOf<FormatException>()
+                  .With.Message.EqualTo("Invalid base64url string."));
+        }
+
+        [Test]
+        public void AddPadbarsWhenNecessary()
+        {
+            var value = "AgQGCAoMDhASFA";
+            
+            Assert.AreEqual("AgQGCAoMDhASFA==",
+                Convert.ToBase64String(_base64Url.Decode(value)));
         }
     }
 }

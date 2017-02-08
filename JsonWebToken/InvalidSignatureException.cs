@@ -8,6 +8,7 @@ namespace JsonWebToken
     public class InvalidSignatureException : Exception
     {
         public InvalidSignatureException(string signature, string expected)
+            : base("Invalid signature.")
         {
             InvalidSignature = signature;
             ExpectedSignature = expected;

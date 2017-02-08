@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="AlgorithmMethod.cs" />
     <Compile Include="Base64Url.cs" />
+    <Compile Include="InvalidExpirationTimeException.cs" />
     <Compile Include="TokenInformation.cs" />
     <Compile Include="UnixTimeStamp.cs" />
     <Compile Include="InvalidSignatureException.cs" />

@@ -70,7 +70,13 @@ namespace JsonWebToken
             
             if (validateSignature)
             {
-                var algorithm = (AlgorithmMethod)Enum.Parse(typeof(AlgorithmMethod), headerDictionary["alg"]);
+                AlgorithmMethod algorithm;
+
+                if (!Enum.TryParse(headerDictionary["alg"], out algorithm))
+                {
+                    throw new NotImplementedException($"Algorithm not implemented: {headerDictionary["alg"]}");
+                }
+                
                 var expectedSignature = CreateSignature(algorithm, key, header, claims);
 
                 if (!string.Equals(signature, expectedSignature))
@@ -94,10 +100,8 @@ namespace JsonWebToken
             {
                 case AlgorithmMethod.HS256: return new HMACSHA256(key);
                 case AlgorithmMethod.HS384: return new HMACSHA384(key);
-                case AlgorithmMethod.HS512: return new HMACSHA512(key);
+                default: return new HMACSHA512(key);
             }
-
-            throw new Exception("Invalid algorithm: " + method);
         }
 
         /// <summary>

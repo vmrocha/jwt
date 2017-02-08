@@ -66,16 +66,17 @@ namespace JsonWebToken
         /// <returns>Expiration time in Unix TimeStamp format or <code>null</code> if not found or invalid.</returns>
         private long? GetExpirationTime()
         {
-            if (Claims.ContainsKey(RegisteredClaims.ExpirationTime) &&
-                Claims[RegisteredClaims.ExpirationTime] != null)
+            if (Claims.ContainsKey(RegisteredClaims.ExpirationTime))
             {
                 var expirationValue = Claims[RegisteredClaims.ExpirationTime].ToString();
 
                 long unixTime = 0;
-                if (long.TryParse(expirationValue, out unixTime))
+                if (!long.TryParse(expirationValue, out unixTime))
                 {
-                    return unixTime;
+                    throw new InvalidExpirationTimeException(expirationValue);
                 }
+
+                return unixTime;
             }
 
             return null;
