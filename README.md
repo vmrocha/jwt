@@ -25,7 +25,7 @@ var claims = new Dictionary<string, object>
     { "name", "John Doe" },
     { "admin", true }
 };
-var token = jsongWebToken.CreateToken(key, , DateTime.UtcNow.AddMinutes(10));
+var token = jsongWebToken.CreateToken(key, claims, DateTime.UtcNow.AddMinutes(10));
 ```
 
 ### Decode Token
