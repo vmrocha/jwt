@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonWebToken
+namespace VmRocha.Jwt
 {
     public class Base64Url
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonWebToken
+namespace VmRocha.Jwt
 {
     /// <summary>
     /// Should be trown if <see cref="RegisteredClaims.ExpirationTime"/> is invalid when

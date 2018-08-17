@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web.Script.Serialization;
 
-namespace JsonWebToken
+namespace VmRocha.Jwt
 {
     /// <summary>
     /// Used to create, decode and validate JSON Web Tokens.

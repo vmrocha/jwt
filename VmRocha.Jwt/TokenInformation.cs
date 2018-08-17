@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace JsonWebToken
+namespace VmRocha.Jwt
 {
     public sealed class TokenInformation
     {

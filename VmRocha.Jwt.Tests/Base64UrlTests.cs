@@ -2,7 +2,7 @@
 using System;
 using System.Text;
 
-namespace JsonWebToken.Tests
+namespace VmRocha.Jwt.Tests
 {
     [TestFixture]
     public class Base64UrlTests

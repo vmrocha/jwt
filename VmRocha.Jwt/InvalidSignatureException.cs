@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonWebToken
+namespace VmRocha.Jwt
 {
     /// <summary>
     /// Should be thrown if the token signature is not valid.

@@ -1,4 +1,4 @@
-﻿namespace JsonWebToken
+﻿namespace VmRocha.Jwt
 {
     /// <summary>
     /// The following Claim Names are registered in the IANA "JSON Web Token

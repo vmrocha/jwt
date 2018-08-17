@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace JsonWebToken
+namespace VmRocha.Jwt
 {
     /// <summary>
     /// Algorithm methods supported by <see cref="JsonWebToken"/>.

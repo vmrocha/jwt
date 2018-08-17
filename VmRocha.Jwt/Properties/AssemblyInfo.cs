@@ -4,10 +4,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Json Web Token")]
-[assembly: AssemblyDescription("JWT - Json Web Token for the .NET Framework")]
+[assembly: AssemblyTitle("JSON Web Token")]
+[assembly: AssemblyDescription("JWT - JSON Web Token for the .NET Framework")]
 [assembly: AssemblyCompany("Vinicius de Melo Rocha")]
-[assembly: AssemblyProduct("JsonWebToken")]
+[assembly: AssemblyProduct("VmRocha.Jwt")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 

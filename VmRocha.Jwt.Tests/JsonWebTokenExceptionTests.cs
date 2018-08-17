@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace JsonWebToken.Tests
+namespace VmRocha.Jwt.Tests
 {
     [TestFixture]
     public class JsonWebTokenExceptionTests

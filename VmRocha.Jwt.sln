@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonWebToken", "JsonWebToken\JsonWebToken.csproj", "{CB5784D6-698E-4754-8C2B-2EAB80CBEDB7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VmRocha.Jwt", "VmRocha.Jwt\VmRocha.Jwt.csproj", "{CB5784D6-698E-4754-8C2B-2EAB80CBEDB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonWebToken.Tests", "JsonWebToken.Tests\JsonWebToken.Tests.csproj", "{108605F0-B3FE-4ABC-B1D5-2CBDD73CD408}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VmRocha.Jwt.Tests", "VmRocha.Jwt.Tests\VmRocha.Jwt.Tests.csproj", "{108605F0-B3FE-4ABC-B1D5-2CBDD73CD408}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{15FBA7CB-6772-4281-A730-2C14052BE1E2}"
 	ProjectSection(SolutionItems) = preProject
@@ -29,5 +29,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2AFF6C54-5365-4227-B7A1-A0C78DA3F9BF}
 	EndGlobalSection
 EndGlobal
