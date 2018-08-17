@@ -30,7 +30,7 @@ namespace JsonWebToken.Tests
         {
             Assert.That(_base64Url.Decode(_encoded), Is.EqualTo(_decoded));
         }
-        
+
         [Test]
         public void ThrowFormatExceptionForInvalidBase64Url()
         {
@@ -46,7 +46,7 @@ namespace JsonWebToken.Tests
         public void AddPadbarsWhenNecessary()
         {
             var value = "AgQGCAoMDhASFA";
-            
+
             Assert.AreEqual("AgQGCAoMDhASFA==",
                 Convert.ToBase64String(_base64Url.Decode(value)));
         }

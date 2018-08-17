@@ -86,6 +86,6 @@
         /// to prevent the JWT from being replayed.The "jti" value is a case-
         /// sensitive string.  Use of this claim is OPTIONAL.
         /// </summary>
-        public static string JWTID = "jti";
+        public static string JwtId = "jti";
     }
 }

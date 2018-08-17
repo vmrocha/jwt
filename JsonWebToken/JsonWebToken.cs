@@ -109,7 +109,7 @@ namespace JsonWebToken
             };
 
             IncludeExpirationTime(claims, expirationTime);
-            
+
             var encodedHeader = _base64Url.Encode(GetBytes(_serializer.Serialize(header)));
             var encodedPayload = _base64Url.Encode(GetBytes(_serializer.Serialize(claims)));
             var encodedSignature = CreateSignature(method, key, encodedHeader, encodedPayload);
@@ -132,7 +132,6 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="token">Encoded JWT token.</param>
         /// <param name="key">Key used to validate the token signature.</param>
-        /// <param name="validateSignature"><code>true</code> to validate the token signature.</param>
         /// <returns>User claims as populated in a <see cref="Dictionary{String, Object}"/>.</returns>
         public TokenInformation Decode(string token, byte[] key)
         {
@@ -147,16 +146,15 @@ namespace JsonWebToken
 
             var headerDictionary = _serializer.Deserialize<Dictionary<string, string>>(GetString(decodedHeader));
             var claimsDictionary = _serializer.Deserialize<Dictionary<string, object>>(GetString(decodedClaims));
-            
+
             if (key != null)
             {
-                AlgorithmMethod algorithm;
 
-                if (!Enum.TryParse(headerDictionary["alg"], out algorithm))
+                if (!Enum.TryParse(headerDictionary["alg"], out AlgorithmMethod algorithm))
                 {
                     throw new NotImplementedException($"Algorithm not implemented: {headerDictionary["alg"]}");
                 }
-                
+
                 var expectedSignature = CreateSignature(algorithm, key, header, claims);
 
                 if (!string.Equals(signature, expectedSignature))
@@ -197,8 +195,8 @@ namespace JsonWebToken
         /// <summary>
         /// Get the bytes representation of the UTF8 string.
         /// </summary>
-        /// <param name="value">String to be encoded to bytes.</param>
-        /// <returns>Byte array representation of the string.</returns>
+        /// <param name="bytes">Byte array representation of the string.</param>
+        /// <returns>String representation of the byte array.</returns>
         private string GetString(byte[] bytes)
         {
             return Encoding.UTF8.GetString(bytes);
@@ -222,11 +220,11 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="claims">Claims information, also known as JWT payload.</param>
         /// <param name="expirationTime">Expiration time in the format of <see cref="DateTime"/>. It will be converted to Unix Time.</param>
-        private void IncludeExpirationTime(Dictionary<string, object> claims, DateTime? expirationTime)
+        private void IncludeExpirationTime(IDictionary<string, object> claims, DateTime? expirationTime)
         {
             if (expirationTime.HasValue)
             {
-                long unixTimeStamp = UnixTimeStamp.ToUnixTimeStamp(expirationTime.Value);
+                var unixTimeStamp = UnixTimeStamp.ToUnixTimeStamp(expirationTime.Value);
                 if (claims.ContainsKey(RegisteredClaims.ExpirationTime))
                 {
                     claims[RegisteredClaims.ExpirationTime] = unixTimeStamp;

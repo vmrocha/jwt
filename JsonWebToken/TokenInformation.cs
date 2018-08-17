@@ -6,8 +6,7 @@ namespace JsonWebToken
 {
     public sealed class TokenInformation
     {
-        public TokenInformation(
-            Dictionary<string, string> header, Dictionary<string, object> claims)
+        public TokenInformation(IDictionary<string, string> header, IDictionary<string, object> claims)
         {
             Header = new ReadOnlyDictionary<string, string>(header);
             Claims = new ReadOnlyDictionary<string, object>(claims);
@@ -16,12 +15,12 @@ namespace JsonWebToken
         /// <summary>
         /// Read-only dictionary that contains the header information.
         /// </summary>
-        public IReadOnlyDictionary<string, string> Header { get; private set; }
+        public IReadOnlyDictionary<string, string> Header { get; }
 
         /// <summary>
         /// Read-only dictionary that contains all the token claims.
         /// </summary>
-        public IReadOnlyDictionary<string, object> Claims { get; private set; }
+        public IReadOnlyDictionary<string, object> Claims { get; }
 
         /// <summary>
         /// Verifies if the <see cref="RegisteredClaims.ExpirationTime"/> is less than
@@ -62,7 +61,6 @@ namespace JsonWebToken
         /// <summary>
         /// Extract the <see cref="RegisteredClaims.ExpirationTime"/> from the claims dictionary if it is valid.
         /// </summary>
-        /// <param name="claims">Claims information, also known as JWT payload.</param>
         /// <returns>Expiration time in Unix TimeStamp format or <code>null</code> if not found or invalid.</returns>
         private long? GetExpirationTime()
         {
@@ -70,8 +68,7 @@ namespace JsonWebToken
             {
                 var expirationValue = Claims[RegisteredClaims.ExpirationTime].ToString();
 
-                long unixTime = 0;
-                if (!long.TryParse(expirationValue, out unixTime))
+                if (!long.TryParse(expirationValue, out var unixTime))
                 {
                     throw new InvalidExpirationTimeException(expirationValue);
                 }

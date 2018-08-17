@@ -51,7 +51,7 @@ namespace JsonWebToken.Tests
             var expiresOn = DateTime.UtcNow.AddMinutes(30);
             var expiresOnUnix = UnixTimeStamp.ToUnixTimeStamp(expiresOn);
 
-            var token = _jsongWebToken.CreateToken(_key, new Dictionary <string, object>
+            var token = _jsongWebToken.CreateToken(_key, new Dictionary<string, object>
             {
                 { RegisteredClaims.Subject, "1234567890"},
                 { "name", "John Doe" },
@@ -112,7 +112,7 @@ namespace JsonWebToken.Tests
             var token = _jsongWebToken.CreateToken(_key, claims, expirationTime);
             var information = _jsongWebToken.Decode(token, _key);
 
-            Assert.AreEqual(information.ExpiresOn.Value, expirationTime);
+            Assert.AreEqual(information.ExpiresOn, expirationTime);
         }
     }
 }
